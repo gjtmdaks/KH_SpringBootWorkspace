@@ -1,0 +1,27 @@
+package com.kh.menu.security.utils;
+
+import java.time.Duration;
+
+import org.springframework.http.ResponseCookie;
+
+public class CookieUtil {
+	public static final String ACCESS_COOKIE = "accessToken";
+	public static final String REFRESH_COOKI = "refreshToken";
+	public static final String ROLE_COOKIE = "userRoles";
+	
+	public static ResponseCookie createTokenCookie(
+			String name, String value, long maxAgeDays
+			) {
+		return ResponseCookie.from(name, value)
+							.httpOnly(name.equals(REFRESH_COOKI))
+							.secure(false) // 개발환경에서만 false
+							.path("/")
+							.sameSite("Lax") // CSRF 방어용
+							.maxAge(
+								maxAgeDays == 0 ? Duration.ZERO :
+								name.equals(REFRESH_COOKI) ? Duration.ofDays(maxAgeDays) :
+								Duration.ofMinutes(maxAgeDays)
+									) // 만료시간
+							.build();
+	}
+}
