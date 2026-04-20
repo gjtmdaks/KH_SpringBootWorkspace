@@ -10,9 +10,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.kh.menu.security.filter.JWTAuthenticationFilter;
+import com.kh.menu.security.model.hendler.OAuth2SuccessHandler;
+import com.kh.menu.security.model.service.OAuth2Service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +29,10 @@ public class SecurityConfig {
 	
 	@Bean
 	public SecurityFilterChain filterChain(
-			HttpSecurity http
-//			JWTAuthenticationFilter jwtFilter,
-//			OAuth2Service service,
-//			OAuth2SuccessHandler handler
+			HttpSecurity http,
+			JWTAuthenticationFilter jwtFilter,
+			OAuth2Service service,
+			OAuth2SuccessHandler handler
 			) throws Exception {
 		http
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -44,12 +49,18 @@ public class SecurityConfig {
 			.sessionManagement(management -> 
 				management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			// .oauth2인증설정
+			.oauth2Login(oauth ->
+				oauth
+					.userInfoEndpoint(u -> u.userService(service))
+					.successHandler(handler)
+			)
 			.authorizeHttpRequests(auth -> 
 				auth
-				.requestMatchers("/auth/login", "/auth/signup", "/auth/logout", "/auth/refresh").permitAll()
-				.requestMatchers("/oauth2/**", "/login**", "/error").permitAll()
-				.requestMatchers("/**").authenticated()
+					.requestMatchers("/auth/login", "/auth/signup", "/auth/logout", "/auth/refresh").permitAll()
+					.requestMatchers("/oauth2/**", "/login**", "/error").permitAll()
+					.requestMatchers("/**").authenticated()
 			);
+		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 		
 		return http.build();
 	}

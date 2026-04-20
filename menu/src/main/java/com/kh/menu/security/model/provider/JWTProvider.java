@@ -6,6 +6,8 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.kh.menu.security.utils.CookieUtil;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -32,7 +34,8 @@ public class JWTProvider {
 		return Jwts.builder()
 				.setSubject(String.valueOf(id)) // 페이로드에 저장할 값. (사용자 id)
 				.setIssuedAt(now)
-				.setExpiration(new Date(now.getTime() + (1000L * 60 * minutes))) // 분 단위로 유지
+//				.setExpiration(new Date(now.getTime() + (1000L * 60 * minutes))) // 분 단위로 유지
+				.setExpiration(new Date(now.getTime() + (1000L * 10)))
 				.signWith(key, SignatureAlgorithm.HS256)
 				.compact();
 	}
@@ -50,5 +53,16 @@ public class JWTProvider {
 				.setExpiration(new Date(now.getTime() + (1000L * 60 * 60 * 24 * i))) // 일 단위로 유지
 				.signWith(refreshKey, SignatureAlgorithm.HS256)
 				.compact();
+	}
+	
+	public Long getUserId(String token, String cookieKey) {
+		return Long.valueOf(
+				Jwts.parserBuilder()
+					.setSigningKey(cookieKey.equals(CookieUtil.ACCESS_COOKIE) ? key : refreshKey)
+					.build()
+					.parseClaimsJws(token)
+					.getBody()
+					.getSubject()
+				);
 	}
 }

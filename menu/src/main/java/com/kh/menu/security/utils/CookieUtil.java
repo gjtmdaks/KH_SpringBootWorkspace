@@ -4,6 +4,8 @@ import java.time.Duration;
 
 import org.springframework.http.ResponseCookie;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 public class CookieUtil {
 	public static final String ACCESS_COOKIE = "accessToken";
 	public static final String REFRESH_COOKI = "refreshToken";
@@ -19,9 +21,20 @@ public class CookieUtil {
 							.sameSite("Lax") // CSRF 방어용
 							.maxAge(
 								maxAgeDays == 0 ? Duration.ZERO :
-								name.equals(REFRESH_COOKI) ? Duration.ofDays(maxAgeDays) :
-								Duration.ofMinutes(maxAgeDays)
+								name.equals(REFRESH_COOKI) ?
+										Duration.ofDays(maxAgeDays) :
+//										Duration.ofMinutes(maxAgeDays)
+										Duration.ofSeconds(10)
 									) // 만료시간
 							.build();
+	}
+	
+	public static String resolveAccessToken(HttpServletRequest req) {
+		String bearerToken = req.getHeader("Authorization");
+		
+		if(bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			return bearerToken.substring(7).trim();
+		}
+		return null;
 	}
 }

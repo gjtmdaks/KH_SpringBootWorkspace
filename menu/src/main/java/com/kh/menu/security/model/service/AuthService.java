@@ -14,6 +14,7 @@ import com.kh.menu.security.model.dto.AuthDto.User;
 import com.kh.menu.security.model.dto.AuthDto.UserAuthority;
 import com.kh.menu.security.model.dto.AuthDto.UserCredential;
 import com.kh.menu.security.model.provider.JWTProvider;
+import com.kh.menu.security.utils.CookieUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +100,22 @@ public class AuthService {
 						.refreshToken(refreshToken)
 						.user(user)
 						.build();
+	}
+
+	public AuthResult refreshByCookie(String refreshCookie) {
+		Long userId = jwt.getUserId(refreshCookie, CookieUtil.REFRESH_COOKI);
+		User user = authDao.findUserByUserId(userId);
+		
+		String accessToken = jwt.createAccessToken(userId, 30);
+		
+		return AuthResult.builder()
+					.accessToken(accessToken)
+					.user(user)
+					.build();
+	}
+
+	public User findUserByUserId(Long userId) {
+		return authDao.findUserByUserId(userId);
 	}
 	
 }
