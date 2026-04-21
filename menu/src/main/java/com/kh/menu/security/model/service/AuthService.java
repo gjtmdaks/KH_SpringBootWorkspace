@@ -117,5 +117,9 @@ public class AuthService {
 	public User findUserByUserId(Long userId) {
 		return authDao.findUserByUserId(userId);
 	}
+
+	public String getKakaoAccessToken(Long userId) {
+		return authDao.getKakaoAccessToken(userId);
+	}
 	
 }

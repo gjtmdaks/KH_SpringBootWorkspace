@@ -22,6 +22,15 @@
 		WHERE UPPER(EMAIL) = UPPER(#{email})
 	</select>
 	
+	<select id="findUserByProvider" resultMap="UserResult">
+		SELECT U.ID, EMAIL, NAME, PROFILE, AUTHORITY
+		FROM USERS U
+		LEFT JOIN USER_IDENTITIES UI ON U.ID = UI.USER_ID
+		JOIN USER_AUTHORITY UA ON U.ID = UA.USER_ID
+		WHERE UI.PROVIDER = #{provider}
+			AND UI.PROVIDER_USER_ID=#{providerId}
+	</select>
+	
 	<!-- 자동 회원가입 코드(USERS, CRED, AUTH) -->
     <insert id="insertUser">
         <selectKey keyProperty="id" resultType="long" order="BEFORE">
